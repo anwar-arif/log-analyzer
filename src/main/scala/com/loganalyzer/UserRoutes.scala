@@ -36,8 +36,8 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
   //#users-get-post
   //#users-get-delete
   val userRoutes: Route = {
-  pathPrefix("api") {
-    pathPrefix("users") {
+    pathPrefix("api") {
+      pathPrefix("users") {
       concat(
         //#users-get-delete
         pathEnd {
@@ -76,7 +76,7 @@ class UserRoutes(userRegistry: ActorRef[UserRegistry.Command])(implicit val syst
         })
       //#users-get-delete
     }
-  }
+    }
   }
 
   //#all-routes
