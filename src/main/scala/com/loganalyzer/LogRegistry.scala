@@ -7,30 +7,30 @@ import akka.http.scaladsl.model.DateTime
 import java.util.Date
 import scala.collection.immutable
 
-final case class Log(dateTimeFrom: DateTime, dateTimeUntil: DateTime, message: String)
+final case class Log(dateTimeFrom: Date, dateTimeUntil: Date, message: String)
 final case class Logs(logs: immutable.Seq[Log])
-final case class LogData(dateTime: DateTime, message: String)
+final case class LogData(dateTime: Date, message: String)
 
 object LogRegistry {
   sealed trait Command
 
   // model class
-  final case class LogRequest(dateTimeFrom: DateTime, dateTimeUntil: DateTime, phrase: String)
-  final case class LogResponse(dateTime: DateTime, message: String, highlightText: Seq[HighlightText])
+  final case class LogRequest(dateTimeFrom: Date, dateTimeUntil: Date, phrase: String)
+  final case class LogData(dateTime: Date, message: String, highlightText: Seq[HighlightText])
   final case class HighlightText(fromPosition: Int, toPosition: Int)
-  final case class HistogramBar(dateTime: DateTime, counts: Int)
+  final case class HistogramBar(dateTime: Date, counts: Int)
 
   // request class
   final case class GetStatus(replyTo: ActorRef[GetStatusResponse]) extends Command
   final case class GetFileSize(replyTo: ActorRef[GetFileSizeResponse]) extends Command
-  final case class GetLog(logRequest: LogRequest, replyTo: ActorRef[GetLogResponse]) extends Command
+  final case class GetLogData(logRequest: LogRequest, replyTo: ActorRef[GetLogDataResponse]) extends Command
   final case class GetHistogram(logRequest: LogRequest, replyTo: ActorRef[GetHistogramResponse]) extends Command
 
   // response class
   final case class GetStatusResponse(status: String)
   final case class GetFileSizeResponse(size: Long)
-  final case class GetLogResponse(data: Option[Seq[LogResponse]], dateTimeFrom: DateTime, dateTimeUntil: DateTime, phrase: String)
-  final case class GetHistogramResponse(histogram: Option[Seq[HistogramBar]], dateTimeFrom: DateTime, dateTimeUntil: DateTime, phrase: String)
+  final case class GetLogDataResponse(data: Seq[LogData], dateTimeFrom: Date, dateTimeUntil: Date, phrase: String)
+  final case class GetHistogramResponse(histogram: Seq[HistogramBar], dateTimeFrom: Date, dateTimeUntil: Date, phrase: String)
 
   def apply(): Behavior[Command] = registry(Seq.empty)
 
@@ -39,6 +39,32 @@ object LogRegistry {
       case GetStatus(replyTo) =>
         replyTo ! GetStatusResponse("Okay")
         Behaviors.same
+      case GetFileSize(replyTo) =>
+        replyTo ! GetFileSizeResponse(1024L)
+        Behaviors.same
+      case GetLogData(logRequest: LogRequest, replyTo) =>
+        replyTo ! getLogDataResponse(logRequest)
+        Behaviors.same
+      case GetHistogram(logRequest: LogRequest, replyTo) =>
+        replyTo ! GetStatusResponse("Histogram response")
+        Behaviors.same
     }
+  }
+
+  def getLogDataResponse(logRequest: LogRequest): GetLogDataResponse = {
+    GetLogDataResponse(
+      Seq(
+        LogData(
+          logRequest.dateTimeFrom,
+          "Dummy Message",
+          Seq(
+            HighlightText(0, 4)
+          )
+        )
+      ),
+      logRequest.dateTimeFrom,
+      logRequest.dateTimeUntil,
+      logRequest.phrase
+      )
   }
 }
