@@ -9,6 +9,7 @@ lazy val root = (project in file(".")).
     )),
     name := "log-analyzer",
     libraryDependencies ++= Seq(
+      "io.spray" %%  "spray-json" % "1.3.6",
       "com.typesafe.akka" %% "akka-http"                % akkaHttpVersion,
       "com.typesafe.akka" %% "akka-http-spray-json"     % akkaHttpVersion,
       "com.typesafe.akka" %% "akka-actor-typed"         % akkaVersion,
@@ -17,6 +18,8 @@ lazy val root = (project in file(".")).
 
       "com.typesafe.akka" %% "akka-http-testkit"        % akkaHttpVersion % Test,
       "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion     % Test,
-      "org.scalatest"     %% "scalatest"                % "3.1.4"         % Test
+      "org.scalatest"     %% "scalatest"                % "3.1.4"         % Test,
+      "com.lightbend.akka" %% "akka-stream-alpakka-file" % "2.0.2",
+      "com.typesafe.akka" %% "akka-stream" % akkaVersion
     )
   )

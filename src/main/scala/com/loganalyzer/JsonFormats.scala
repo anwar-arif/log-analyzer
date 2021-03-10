@@ -5,11 +5,9 @@ import com.loganalyzer.LogRegistry.{GetFileSizeResponse, GetHistogramResponse, G
 import com.loganalyzer.UserRegistry.ActionPerformed
 
 //#json-formats
-import spray.json.DefaultJsonProtocol
 
-object JsonFormats  {
-  // import the default encoders for primitive types (Int, String, Lists etc)
-  import DefaultJsonProtocol._
+object JsonFormats {
+  import spray.json.DefaultJsonProtocol._
 
   implicit val userJsonFormat = jsonFormat3(User)
 
@@ -33,5 +31,6 @@ object JsonFormats  {
 
   implicit val getHistogramResponse = jsonFormat4(GetHistogramResponse)
 
+  implicit val jsonLogData = jsonFormat2(JsonLogData)
 }
 //#json-formats

@@ -7,9 +7,7 @@ import akka.http.scaladsl.model.DateTime
 import java.util.Date
 import scala.collection.immutable
 
-//final case class Log(dateTimeFrom: Date, dateTimeUntil: Date, message: String)
-//final case class Logs(logs: immutable.Seq[Log])
-//final case class LogData(dateTime: Date, message: String)
+final case class JsonLogData(dateTime: Date, message: String)
 
 // model class
 final case class LogRequest(dateTimeFrom: Date, dateTimeUntil: Date, phrase: String)

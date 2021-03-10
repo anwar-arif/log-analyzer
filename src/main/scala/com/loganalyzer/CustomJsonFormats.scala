@@ -6,10 +6,10 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 object CustomJsonFormats extends DefaultJsonProtocol {
-  final val dateFormat = "dd/MM/yyyy"
+  final val dateFormat = "dd/MM/YYYY"
 
   implicit object DateJsonFormat extends RootJsonFormat[Date] {
-    override def write(obj: Date): JsValue = JsString(obj.toString)
+    override def write(obj: Date): JsValue = JsString(obj.formatted(dateFormat))
 
     override def read(json: JsValue): Date = json match {
 //      TODO: Need to handle date format error
