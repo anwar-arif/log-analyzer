@@ -7,18 +7,18 @@ import akka.http.scaladsl.model.DateTime
 import java.util.Date
 import scala.collection.immutable
 
-final case class Log(dateTimeFrom: Date, dateTimeUntil: Date, message: String)
-final case class Logs(logs: immutable.Seq[Log])
-final case class LogData(dateTime: Date, message: String)
+//final case class Log(dateTimeFrom: Date, dateTimeUntil: Date, message: String)
+//final case class Logs(logs: immutable.Seq[Log])
+//final case class LogData(dateTime: Date, message: String)
+
+// model class
+final case class LogRequest(dateTimeFrom: Date, dateTimeUntil: Date, phrase: String)
+final case class LogData(dateTime: Date, message: String, highlightText: Seq[HighlightText])
+final case class HighlightText(fromPosition: Int, toPosition: Int)
+final case class HistogramBar(dateTime: Date, counts: Int)
 
 object LogRegistry {
   sealed trait Command
-
-  // model class
-  final case class LogRequest(dateTimeFrom: Date, dateTimeUntil: Date, phrase: String)
-  final case class LogData(dateTime: Date, message: String, highlightText: Seq[HighlightText])
-  final case class HighlightText(fromPosition: Int, toPosition: Int)
-  final case class HistogramBar(dateTime: Date, counts: Int)
 
   // request class
   final case class GetStatus(replyTo: ActorRef[GetStatusResponse]) extends Command
@@ -46,7 +46,7 @@ object LogRegistry {
         replyTo ! getLogDataResponse(logRequest)
         Behaviors.same
       case GetHistogram(logRequest: LogRequest, replyTo) =>
-        replyTo ! GetStatusResponse("Histogram response")
+        replyTo ! getHistogramResponse(logRequest)
         Behaviors.same
     }
   }
@@ -65,6 +65,20 @@ object LogRegistry {
       logRequest.dateTimeFrom,
       logRequest.dateTimeUntil,
       logRequest.phrase
-      )
+    )
+  }
+
+  def getHistogramResponse(logRequest: LogRequest): GetHistogramResponse = {
+    GetHistogramResponse(
+      Seq(
+        HistogramBar(
+          new Date(2021, 3, 10),
+          15
+        )
+      ),
+      new Date(2021, 3, 5),
+      new Date(2021, 3, 15),
+      "actor"
+    )
   }
 }

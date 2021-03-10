@@ -5,7 +5,7 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
-import com.loganalyzer.LogRegistry.{GetFileSize, GetFileSizeResponse, GetLogData, GetLogDataResponse, GetStatus, GetStatusResponse, LogRequest}
+import com.loganalyzer.LogRegistry.{GetFileSize, GetFileSizeResponse, GetHistogram, GetHistogramResponse, GetLogData, GetLogDataResponse, GetStatus, GetStatusResponse}
 
 import scala.concurrent.Future
 
@@ -21,7 +21,8 @@ class LogRoutes(logRegistry: ActorRef[LogRegistry.Command])(implicit val system:
     logRegistry.ask(GetFileSize)
   def getData(logRequest: LogRequest): Future[GetLogDataResponse] =
     logRegistry.ask(GetLogData(logRequest, _))
-
+  def getHistogram(logRequest: LogRequest): Future[GetHistogramResponse] =
+    logRegistry.ask(GetHistogram(logRequest, _))
 
 
   val logRoutes: Route = {
@@ -62,7 +63,11 @@ class LogRoutes(logRegistry: ActorRef[LogRegistry.Command])(implicit val system:
           concat(
             pathEnd {
               post(
-                complete(getStatus())
+                entity(as[LogRequest]) { logRequest =>
+                  onSuccess(getHistogram(logRequest)) { response =>
+                    complete(response)
+                  }
+                }
               )
             }
           )

@@ -1,7 +1,7 @@
 package com.loganalyzer
 
 import com.loganalyzer.CustomJsonFormats.DateJsonFormat
-import com.loganalyzer.LogRegistry.{GetFileSizeResponse, GetLogDataResponse, GetStatusResponse, LogRequest}
+import com.loganalyzer.LogRegistry.{GetFileSizeResponse, GetHistogramResponse, GetLogDataResponse, GetStatusResponse}
 import com.loganalyzer.UserRegistry.ActionPerformed
 
 //#json-formats
@@ -19,11 +19,19 @@ object JsonFormats  {
 
   implicit val statusJsonFormat = jsonFormat1(GetStatusResponse)
 
-  implicit val logDataJsonFormat = jsonFormat2(LogData)
+  implicit val highlightTextJsonFormat = jsonFormat2(HighlightText)
+
+  implicit val logDataJsonFormat = jsonFormat3(LogData)
 
   implicit val logRequestJsonFormat = jsonFormat3(LogRequest)
 
   implicit val getFileSizeResponseJsonFormat = jsonFormat1(GetFileSizeResponse)
+
+  implicit val histogramBarJsonFormat = jsonFormat2(HistogramBar)
+
+  implicit val getLogDataResponseJsonFormat = jsonFormat4(GetLogDataResponse)
+
+  implicit val getHistogramResponse = jsonFormat4(GetHistogramResponse)
 
 }
 //#json-formats

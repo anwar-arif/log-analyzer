@@ -1,6 +1,6 @@
 package com.loganalyzer
 
-import spray.json.{DefaultJsonProtocol, JsArray, JsString, JsValue, RootJsonFormat}
+import spray.json.{DefaultJsonProtocol, JsArray, JsString, JsValue, RootJsonFormat, deserializationError}
 
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -16,14 +16,7 @@ object CustomJsonFormats extends DefaultJsonProtocol {
       case JsString(json) => {
         new SimpleDateFormat(dateFormat).parse(json)
       }
+      case _ => deserializationError(s"Expected date format $dateFormat")
     }
-  }
-
-  implicit object LogDataJsonFormat extends RootJsonFormat[LogData] {
-    override def read(json: JsValue): LogData = json match {
-      case JsArray(JsArray())
-    }
-
-    override def write(obj: LogData): JsValue = ???
   }
 }
