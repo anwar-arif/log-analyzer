@@ -19,7 +19,6 @@ object QuickstartApp {
     val host = system.settings.config.getString("app.http.host")
     val port = system.settings.config.getInt("app.http.port")
 
-    val logReadFuture = LogReader.readLogData()(system)
     val futureBinding = Http().newServerAt(host, port).bind(routes)
 
     futureBinding.onComplete {
@@ -31,10 +30,7 @@ object QuickstartApp {
         system.terminate()
     }
 
-//    logReadFuture.onComplete {
-//      case Success(value) => system.log.info(value.toString)
-//      case Failure(exception) => system.log.error(exception.getMessage)
-//    }
+    LogRepository.getConnection()
   }
   //#start-http-server
   def main(args: Array[String]): Unit = {

@@ -17,10 +17,13 @@ class LogRoutes(logRegistry: ActorRef[LogRegistry.Command])(implicit val system:
 
   def getStatus(): Future[GetStatusResponse] =
     logRegistry.ask(GetStatus)
+
   def getFileSize(): Future[GetFileSizeResponse] =
     logRegistry.ask(GetFileSize)
+
   def getData(logRequest: LogRequest): Future[GetLogDataResponse] =
     logRegistry.ask(GetLogData(logRequest, _))
+
   def getHistogram(logRequest: LogRequest): Future[GetHistogramResponse] =
     logRegistry.ask(GetHistogram(logRequest, _))
 
