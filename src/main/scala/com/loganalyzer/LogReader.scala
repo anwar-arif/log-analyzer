@@ -1,25 +1,27 @@
 package com.loganalyzer
 
-import akka.actor.typed.ActorSystem
+import com.loganalyzer.utils.DateUtil
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.io.File
 import scala.io.Source
 
 object LogReader {
   private var status = "File processing isn't started yet"
-  val dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss")
   val logger = LoggerFactory.getLogger("LogReader")
+  var logFileSize: Long = 0
 
   def readLogData() = {
     try {
       val config = ConfigFactory.load("application.conf")
       val filePath = config.getString("app.log-file.location")
+      logFileSize = new File(filePath).length()
       val logSource = Source.fromFile(filePath)
       val fileContent = logSource.getLines.toSeq
       logSource.close()
+
+      var dbLogs = Seq.empty[DbLogData]
 
       fileContent.foreach(line => {
         val words = line.split(' ')
@@ -33,21 +35,18 @@ object LogReader {
 
         time = time.strip()
         message = message.strip()
-        val date: Date = dateFormat.parse(time)
-        val epoch: Long = date.getTime
+        val epoch: Long = DateUtil.getEpoch(time)
 
-        logger.info("time in epoch: " + epoch)
-
-        val epochToDate = dateFormat.format(new Date(epoch))
-        logger.info("time in date: " + epochToDate)
-
-        logger.info("message: " + message)
-        println()
+        dbLogs :+ DbLogData(epoch, message)
 
       })
-      logger.info("file content: " + fileContent)
+
+      LogRepository.insertLogs(dbLogs)
     } catch {
-      case _: Exception => None
+      case ex: Exception => {
+        logger.error("Error while reading log data: " + ex.getMessage)
+        None
+      }
     }
   }
 }

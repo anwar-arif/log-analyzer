@@ -38,7 +38,7 @@ object LogRegistry {
         replyTo ! GetStatusResponse("Okay")
         Behaviors.same
       case GetFileSize(replyTo) =>
-        replyTo ! GetFileSizeResponse(1024L)
+        replyTo ! getLogFileSize()
         Behaviors.same
       case GetLogData(logRequest: LogRequest, replyTo) =>
         replyTo ! getLogDataResponse(logRequest)
@@ -47,6 +47,10 @@ object LogRegistry {
         replyTo ! getHistogramResponse(logRequest)
         Behaviors.same
     }
+  }
+
+  def getLogFileSize(): GetFileSizeResponse = {
+    GetFileSizeResponse(LogReader.logFileSize)
   }
 
   def getLogDataResponse(logRequest: LogRequest): GetLogDataResponse = {
@@ -64,6 +68,7 @@ object LogRegistry {
       logRequest.dateTimeUntil,
       logRequest.phrase
     )
+
   }
 
   def getHistogramResponse(logRequest: LogRequest): GetHistogramResponse = {
