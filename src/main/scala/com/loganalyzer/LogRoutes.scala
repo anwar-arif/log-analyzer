@@ -5,14 +5,16 @@ import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
-import com.loganalyzer.LogRegistry.{GetFileSize, GetFileSizeResponse, GetHistogram, GetHistogramResponse, GetLogData, GetLogDataResponse, GetStatus, GetStatusResponse}
+import com.loganalyzer.Models.Model._
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
 
-class LogRoutes(logRegistry: ActorRef[LogRegistry.Command])(implicit val system: ActorSystem[_]) {
+class LogRoutes(logRegistry: ActorRef[Command])(implicit val system: ActorSystem[_]) {
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
   import JsonFormats._
 
+  val logger = LoggerFactory.getLogger("LogRoutes")
   private implicit val timeout = Timeout.create(system.settings.config.getDuration("app.routes.ask-timeout"))
 
   def getStatus(): Future[GetStatusResponse] =
@@ -21,10 +23,13 @@ class LogRoutes(logRegistry: ActorRef[LogRegistry.Command])(implicit val system:
   def getFileSize(): Future[GetFileSizeResponse] =
     logRegistry.ask(GetFileSize)
 
-  def getData(logRequest: LogRequest): Future[GetLogDataResponse] =
+  def getData(logRequest: LogRequest): Future[GetLogDataResponse] = {
+    logger.debug("Request phrase: " + logRequest.phrase)
+    logger.debug(logRequest.dateTimeFrom + " " + logRequest.dateTimeUntil + " " + logRequest.phrase)
     logRegistry.ask(GetLogData(logRequest, _))
+  }
 
-  def getHistogram(logRequest: LogRequest): Future[GetHistogramResponse] =
+  def getHistogram(logRequest: LogRequest): Future[GetLogDataResponse] =
     logRegistry.ask(GetHistogram(logRequest, _))
 
 
@@ -57,6 +62,7 @@ class LogRoutes(logRegistry: ActorRef[LogRegistry.Command])(implicit val system:
                   onSuccess(getData(logRequest)) { response =>
                     complete(response)
                   }
+                  // exception handler
                 }
               )
             }

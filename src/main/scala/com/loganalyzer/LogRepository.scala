@@ -1,11 +1,11 @@
 package com.loganalyzer
 
+import com.loganalyzer.Models.Model._
+import com.loganalyzer.utils.DateUtil
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
 import java.sql.{Connection, DriverManager}
-
-case class DbLogData(date: Long, message: String)
 
 object LogRepository {
   var connection: Option[Connection] = None
@@ -45,9 +45,10 @@ object LogRepository {
 
   def createTable(): Unit = {
     var sql = "CREATE TABLE IF NOT EXISTS logs ("
+    sql += " id integer PRIMARY KEY AUTOINCREMENT, "
     sql += " date integer NOT NULL, "
-    sql += " message text NOT NULL, "
-    sql += " PRIMARY KEY (date, message) "
+    sql += " message text NOT NULL "
+//    sql += " PRIMARY KEY (date, message) "
     sql += " ); "
 
     try {
@@ -62,20 +63,18 @@ object LogRepository {
     }
   }
 
-  def insertLogs(logs: Seq[DbLogData]): Unit = {
-    val insertSql = "INSERT INTO ? (?, ?) VALUES(?, ?)"
+  def insertLogs(logs: List[LogData]): Unit = {
+    val insertSql = "INSERT INTO logs (date, message) VALUES(?, ?)"
     try {
       getConnection() match {
         case Some(conn) => {
           conn.setAutoCommit(false)
           logs.foreach(logData => {
             val pstmt = conn.prepareStatement(insertSql)
-            pstmt.setString(1, tableName)
-            pstmt.setString(2, dateCol)
-            pstmt.setString(3, messageCol)
-            pstmt.setLong(4, logData.date)
-            pstmt.setString(5, logData.message)
+            pstmt.setLong(1, logData.date)
+            pstmt.setString(2, logData.message)
             pstmt.executeUpdate()
+            logger.info("Inserted: " + logData.date + " " + logData.message)
           })
           conn.commit()
           logger.info("Logs inserted successfully!")
@@ -83,6 +82,40 @@ object LogRepository {
       }
     } catch {
       case ex: Exception => logger.error("Error while inserting: " + ex.getMessage)
+    }
+  }
+
+  def getLogs(logRequest: LogRequest): GetLogDataResponse = {
+    val dateTimeFrom: Long = DateUtil.getEpoch(logRequest.dateTimeFrom)
+    val dateTimeUntil: Long = DateUtil.getEpoch(logRequest.dateTimeUntil)
+    val phrase: String = logRequest.phrase
+
+    val sql = s"SELECT $dateCol, $messageCol FROM $tableName WHERE $dateCol BETWEEN " +
+      s"$dateTimeFrom AND $dateTimeUntil AND instr($messageCol, '$phrase') > 0"
+    try {
+      getConnection() match {
+        case Some(conn) => {
+          var resultData = Seq[LogData]()
+
+          val stmt = conn.createStatement()
+          val resultSet = stmt.executeQuery(sql)
+          while (resultSet.next()) {
+            val date = resultSet.getLong(dateCol)
+            val message = resultSet.getString(messageCol)
+
+            resultData = resultData :+ LogData(date, message)
+
+            logger.info(s"Database query date: $date, message: $message")
+          }
+
+          GetLogDataResponse(resultData)
+        }
+      }
+    } catch {
+      case ex: Exception => {
+        logger.error("Error while fetching database: " + ex.getMessage)
+        GetLogDataResponse(Seq.empty)
+      }
     }
   }
 }
