@@ -1,6 +1,6 @@
 package com.loganalyzer
 
-import com.loganalyzer.Models.Model.LogData
+import com.loganalyzer.Models.DataModel.LogData
 import com.loganalyzer.utils.DateUtil
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
@@ -13,12 +13,13 @@ object LogReader {
   val logger = LoggerFactory.getLogger("LogReader")
   var logFileSize: Long = 0
 
-  def readLogData() = {
+  def readLogData(): Unit = {
     try {
-      // val config = ConfigFactory.load("application.conf")
-//      val filePath = config.getString("app.log-file.location")
-      val filePath = "/media/anwar/20FD1C4D6D67341F/Development/Projects/log-analyzer/log-analyzer/src/main/resources/messages.log"
-      logFileSize = new File(filePath).length()
+      val config = ConfigFactory.load("application.conf")
+      val filePath = config.getString("app.log-file.location")
+      val file = new File(filePath)
+      file.createNewFile()
+      logFileSize = file.length()
 
       val logSource = Source.fromFile(filePath)
       val fileContent = logSource.getLines.toSeq
@@ -41,16 +42,18 @@ object LogReader {
         val epoch: Long = DateUtil.getEpoch(time)
         logger.info("Date: " + DateUtil.getDate(epoch) + " epoch: " + epoch)
         dbLogs = dbLogs :+ LogData(epoch, message)
-        // LogRepository.insertLogs(List(DbLogData(epoch, message)))
-
       })
 
       LogRepository.insertLogs(dbLogs)
     } catch {
       case exception: Exception => {
         logger.error("Error while reading log data: " + exception.getMessage)
-        None
       }
     }
+  }
+
+  def getLogFileSize() = {
+    logger.info("File size: " + logFileSize)
+    logFileSize
   }
 }

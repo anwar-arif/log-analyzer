@@ -1,6 +1,6 @@
 package com.loganalyzer
 
-import com.loganalyzer.Models.Model._
+import com.loganalyzer.Models.DataModel._
 import com.loganalyzer.UserRegistry.ActionPerformed
 
 //#json-formats

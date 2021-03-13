@@ -1,6 +1,6 @@
 package com.loganalyzer
 
-import com.loganalyzer.Models.Model._
+import com.loganalyzer.Models.DataModel._
 import com.loganalyzer.utils.DateUtil
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
@@ -26,13 +26,17 @@ object LogRepository {
 
   private def initializeDB(): Option[Connection] = {
     val config = ConfigFactory.load("application.conf")
-    dbUrl = config.getString("app.sqlite.connectionString")
+    val connectionString = config.getString("app.sqlite.connectionString")
+    val dbFilepath = config.getString("app.sqlite.filePath")
+
+    dbUrl = connectionString + dbFilepath
 
     logger.info("Database url: " + dbUrl)
 
     try {
       connection = Option(DriverManager.getConnection(dbUrl))
       logger.info("Connection successful!")
+      deleteTable()
       createTable()
       connection
     } catch {
@@ -43,12 +47,25 @@ object LogRepository {
     }
   }
 
+  def deleteTable(): Unit = {
+    var sql = s"DROP TABLE IF EXISTS logs"
+    try {
+      getConnection() match {
+        case Some(conn) => {
+          conn.createStatement().execute(sql)
+          logger.info("Table deleted!")
+        }
+      }
+    } catch {
+      case ex: Exception => logger.error("Error while deleting table: " + ex.getMessage)
+    }
+  }
+
   def createTable(): Unit = {
     var sql = "CREATE TABLE IF NOT EXISTS logs ("
     sql += " id integer PRIMARY KEY AUTOINCREMENT, "
     sql += " date integer NOT NULL, "
     sql += " message text NOT NULL "
-//    sql += " PRIMARY KEY (date, message) "
     sql += " ); "
 
     try {

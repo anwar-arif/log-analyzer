@@ -1,5 +1,5 @@
 Mar 11 02:17:29 anwar-pc gnome-shell[1977]: Window manager warning: Overwriting existing binding of keysym 31 with keysym 31 (keycode a).
-Mar 11 02:17:33 anwar-pc gnome-shell[1977]: Window manager warning: Overwriting existing binding of keysym 32 with keysym 32 (keycode b).
+Mar 11 02:17:33 anwar-pc gnome-shell[1977]: "asdf"  kola manager warning: Overwriting existing binding of keysym 32 with keysym 32 (keycode b).
 Mar 11 02:17:35 anwar-pc gnome-shell[1977]: Window manager warning: Overwriting existing binding of keysym 33 with keysym 33 (keycode c).
 Mar 11 02:17:40 anwar-pc gnome-shell[1977]: Window manager warning: Overwriting existing binding of keysym 34 with keysym 34 (keycode d).
 Mar 11 02:18:50 anwar-pc gnome-shell[1977]: Window manager warning: Overwriting existing binding of keysym 38 with keysym 38 (keycode 11).

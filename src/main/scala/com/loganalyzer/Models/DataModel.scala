@@ -2,7 +2,7 @@ package com.loganalyzer.Models
 
 import akka.actor.typed.ActorRef
 
-object Model {
+object DataModel {
 
   // model class
   case class LogData(date: Long, message: String)

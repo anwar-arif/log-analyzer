@@ -2,10 +2,12 @@ package com.loganalyzer
 
 import akka.actor.typed.scaladsl.AskPattern.{Askable, schedulerFromActorSystem}
 import akka.actor.typed.{ActorRef, ActorSystem}
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.{ExceptionHandler, Route}
 import akka.util.Timeout
-import com.loganalyzer.Models.Model._
+import com.loganalyzer.Models.DataModel._
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.Future
@@ -25,15 +27,13 @@ class LogRoutes(logRegistry: ActorRef[Command])(implicit val system: ActorSystem
 
   def getData(logRequest: LogRequest): Future[GetLogDataResponse] = {
     logger.debug("Request phrase: " + logRequest.phrase)
-    logger.debug(logRequest.dateTimeFrom + " " + logRequest.dateTimeUntil + " " + logRequest.phrase)
     logRegistry.ask(GetLogData(logRequest, _))
   }
 
   def getHistogram(logRequest: LogRequest): Future[GetLogDataResponse] =
     logRegistry.ask(GetHistogram(logRequest, _))
 
-
-  val logRoutes: Route = {
+  val logRoutes: Route = Route.seal({
     pathPrefix("api") {
       concat(
         pathPrefix("get_status") {
@@ -62,7 +62,6 @@ class LogRoutes(logRegistry: ActorRef[Command])(implicit val system: ActorSystem
                   onSuccess(getData(logRequest)) { response =>
                     complete(response)
                   }
-                  // exception handler
                 }
               )
             }
@@ -83,5 +82,5 @@ class LogRoutes(logRegistry: ActorRef[Command])(implicit val system: ActorSystem
         }
       )
     }
-  }
+  })
 }

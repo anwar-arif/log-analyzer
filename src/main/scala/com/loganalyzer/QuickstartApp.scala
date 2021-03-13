@@ -3,8 +3,11 @@ package com.loganalyzer
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.Directives.concat
+import akka.http.scaladsl.model.HttpResponse
+import akka.http.scaladsl.model.StatusCodes.InternalServerError
+import akka.http.scaladsl.server.{ExceptionHandler, Route}
+import akka.http.scaladsl.server.Directives.{complete, concat, extractUri, get, handleExceptions, pathEnd, pathPrefix}
+import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 
 import scala.util.Failure
@@ -12,6 +15,16 @@ import scala.util.Success
 
 //#main-class
 object QuickstartApp {
+
+//  implicit def myExceptionHandler: ExceptionHandler = ExceptionHandler {
+//    case exception: Throwable => {
+//      complete(HttpResponse(InternalServerError, entity = exception.getMessage))
+//    }
+//    case exception: Exception => {
+//      complete(HttpResponse(InternalServerError, entity = exception.getMessage))
+//    }
+//  }
+
   //#start-http-server
   private def startHttpServer(routes: Route)(implicit system: ActorSystem[_]): Unit = {
     // Akka HTTP still needs a classic ActorSystem to start
@@ -44,12 +57,13 @@ object QuickstartApp {
 
       val userRoutes = new UserRoutes(userRegistryActor)(context.system)
       val logRoutes = new LogRoutes(logRegistryActor)(context.system)
-      val allRoutes = concat(logRoutes.logRoutes, userRoutes.userRoutes)
 
+      val allRoutes = concat(logRoutes.logRoutes, userRoutes.userRoutes)
       startHttpServer(allRoutes)(context.system)
 
       Behaviors.empty
     }
+
     val system = ActorSystem[Nothing](rootBehavior, "HelloAkkaHttpServer", ConfigFactory.load())
     //#server-bootstrapping
   }
