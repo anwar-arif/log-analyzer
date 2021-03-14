@@ -1,7 +1,9 @@
 package com.loganalyzer
 
+import com.loganalyzer.Enums.StatusEnum
+import com.loganalyzer.Enums.StatusEnum.Status
 import com.loganalyzer.Models.DataModel.LogData
-import com.loganalyzer.utils.DateUtil
+import com.loganalyzer.utils.{DateUtil, FileUtil}
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
@@ -9,7 +11,8 @@ import java.io.File
 import scala.io.Source
 
 object LogReader {
-  private var status = "File processing isn't started yet"
+  var status: Status = StatusEnum.InProgress
+
   val logger = LoggerFactory.getLogger("LogReader")
   var logFileSize: Long = 0
 
@@ -17,9 +20,9 @@ object LogReader {
     try {
       val config = ConfigFactory.load("application.conf")
       val filePath = config.getString("app.log-file.location")
-      val file = new File(filePath)
-      file.createNewFile()
-      logFileSize = file.length()
+
+      FileUtil.createFile(filePath)
+      logFileSize = FileUtil.fileSize(filePath)
 
       val logSource = Source.fromFile(filePath)
       val fileContent = logSource.getLines.toSeq
@@ -45,8 +48,12 @@ object LogReader {
       })
 
       LogRepository.insertLogs(dbLogs)
+
+      status = StatusEnum.Okay
+
     } catch {
       case exception: Exception => {
+        status = StatusEnum.Failed
         logger.error("Error while reading log data: " + exception.getMessage)
       }
     }

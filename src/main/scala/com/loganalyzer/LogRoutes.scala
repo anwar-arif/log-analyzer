@@ -1,5 +1,6 @@
 package com.loganalyzer
 
+import akka.actor.FSM.Failure
 import akka.actor.typed.scaladsl.AskPattern.{Askable, schedulerFromActorSystem}
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.http.scaladsl.model.HttpResponse
@@ -10,30 +11,39 @@ import akka.util.Timeout
 import com.loganalyzer.Models.DataModel._
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.util.{Failure, Success}
 
 class LogRoutes(logRegistry: ActorRef[Command])(implicit val system: ActorSystem[_]) {
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
   import JsonFormats._
 
+
   val logger = LoggerFactory.getLogger("LogRoutes")
   private implicit val timeout = Timeout.create(system.settings.config.getDuration("app.routes.ask-timeout"))
 
-  def getStatus(): Future[GetStatusResponse] =
-    logRegistry.ask(GetStatus)
-
-  def getFileSize(): Future[GetFileSizeResponse] =
-    logRegistry.ask(GetFileSize)
-
-  def getData(logRequest: LogRequest): Future[GetLogDataResponse] = {
-    logger.debug("Request phrase: " + logRequest.phrase)
-    logRegistry.ask(GetLogData(logRequest, _))
+  def getStatus(): Future[GetStatusResponse] = {
+//    logRegistry.ask(GetStatus)
+    Future{ LogRegistry.getStatus() }
   }
 
-  def getHistogram(logRequest: LogRequest): Future[GetLogDataResponse] =
-    logRegistry.ask(GetHistogram(logRequest, _))
+  def getFileSize(): Future[GetFileSizeResponse] = {
+//    logRegistry.ask(GetFileSize)
+    Future{ LogRegistry.getLogFileSize() }
+  }
 
-  val logRoutes: Route = Route.seal({
+  def getData(logRequest: LogRequest): Future[GetLogDataResponse] = {
+//    logRegistry.ask(GetLogData(logRequest, _))
+    Future{ LogRegistry.getLogDataResponse(logRequest) }
+  }
+
+  def getHistogram(logRequest: LogRequest): Future[GetLogDataResponse] = {
+//    logRegistry.ask(GetHistogram(logRequest, _))
+    Future{ LogRegistry.getLogDataResponse(logRequest) }
+  }
+
+  val logRoutes: Route =
     pathPrefix("api") {
       concat(
         pathPrefix("get_status") {
@@ -82,5 +92,4 @@ class LogRoutes(logRegistry: ActorRef[Command])(implicit val system: ActorSystem
         }
       )
     }
-  })
 }

@@ -1,10 +1,11 @@
 package com.loganalyzer
 
 import com.loganalyzer.Models.DataModel._
-import com.loganalyzer.utils.DateUtil
+import com.loganalyzer.utils.{DateUtil, FileUtil}
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
+import java.io.File
 import java.sql.{Connection, DriverManager}
 
 object LogRepository {
@@ -27,22 +28,27 @@ object LogRepository {
   private def initializeDB(): Option[Connection] = {
     val config = ConfigFactory.load("application.conf")
     val connectionString = config.getString("app.sqlite.connectionString")
-    val dbFilepath = config.getString("app.sqlite.filePath")
+    val dbFilePath = FileUtil.getDbFilePath()
 
-    dbUrl = connectionString + dbFilepath
+    dbUrl = connectionString + dbFilePath
 
+    logger.info("Db file path: " + dbFilePath)
     logger.info("Database url: " + dbUrl)
 
     try {
+      FileUtil.createFile(dbFilePath)
+
       connection = Option(DriverManager.getConnection(dbUrl))
       logger.info("Connection successful!")
+
       deleteTable()
       createTable()
+
       connection
     } catch {
-      case e: Exception => {
-        logger.info("Exception while connecting to sqlite: " + e.getMessage)
-        None
+      case exception: Exception => {
+        logger.info("Exception while connecting to sqlite: " + exception.getMessage)
+        throw exception
       }
     }
   }
@@ -57,7 +63,10 @@ object LogRepository {
         }
       }
     } catch {
-      case ex: Exception => logger.error("Error while deleting table: " + ex.getMessage)
+      case exception: Exception => {
+        logger.error("Error while deleting table: " + exception.getMessage)
+        throw exception
+      }
     }
   }
 
@@ -76,7 +85,10 @@ object LogRepository {
         }
       }
     } catch {
-      case ex: Exception => logger.error("Error while creating table: " + ex.getMessage)
+      case exception: Exception => {
+        logger.error("Error while creating table: " + exception.getMessage)
+        throw exception
+      }
     }
   }
 
@@ -98,7 +110,10 @@ object LogRepository {
         }
       }
     } catch {
-      case ex: Exception => logger.error("Error while inserting: " + ex.getMessage)
+      case exception: Exception => {
+        logger.error("Error while inserting: " + exception.getMessage)
+        throw exception
+      }
     }
   }
 
@@ -116,6 +131,7 @@ object LogRepository {
 
           val stmt = conn.createStatement()
           val resultSet = stmt.executeQuery(sql)
+
           while (resultSet.next()) {
             val date = resultSet.getLong(dateCol)
             val message = resultSet.getString(messageCol)
@@ -129,8 +145,8 @@ object LogRepository {
         }
       }
     } catch {
-      case ex: Exception => {
-        logger.error("Error while fetching database: " + ex.getMessage)
+      case exception: Exception => {
+        logger.error("Error while fetching database: " + exception.getMessage)
         GetLogDataResponse(Seq.empty)
       }
     }

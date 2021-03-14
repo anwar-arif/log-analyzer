@@ -19,4 +19,16 @@ object CustomJsonFormats extends DefaultJsonProtocol {
       case _ => deserializationError(s"Expected date format $dateFormat")
     }
   }
+
+  implicit object ThrowableJsonFormat extends RootJsonFormat[Throwable] {
+    override def read(json: JsValue): Throwable = throw new Exception(json.toString())
+
+    override def write(obj: Throwable): JsValue = JsString(obj.getMessage)
+  }
+
+  implicit object ExceptionJsonFormat extends RootJsonFormat[Exception] {
+    override def read(json: JsValue): Exception = new Exception(json.toString())
+
+    override def write(obj: Exception): JsValue = JsString(obj.getMessage)
+  }
 }
