@@ -7,6 +7,10 @@ import java.io.File
 
 object FileUtil {
   val logger = LoggerFactory.getLogger("FileUtil")
+  val str = "src/main/sqlite/db"
+  val dbAbsolutePath = str.split('/').foldLeft("")((result, cur) => {
+    result + File.separator + cur
+  })
 //  create file if not exists
   def createFile(filePath: String): Unit = {
     val file = new File(filePath)
@@ -21,14 +25,13 @@ object FileUtil {
 
   def getDbFilePath(): String = {
     val config = ConfigFactory.load("application.conf")
-    val dbAbsolutePath = config.getString("app.sqlite.absolutePath")
     val dbFileName = config.getString("app.sqlite.fileName")
 
     val rootDirectory = System.getProperty("user.dir") + dbAbsolutePath
     val directory = new File(rootDirectory)
     if (!directory.exists()) directory.mkdirs()
 
-    val fullFilePath = rootDirectory + "/" + dbFileName
+    val fullFilePath = rootDirectory + File.separator + dbFileName
 
     val file = new File(fullFilePath)
     file.createNewFile()

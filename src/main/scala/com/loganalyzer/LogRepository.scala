@@ -5,7 +5,6 @@ import com.loganalyzer.utils.{DateUtil, FileUtil}
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
-import java.io.File
 import java.sql.{Connection, DriverManager}
 
 object LogRepository {

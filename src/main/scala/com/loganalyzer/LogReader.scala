@@ -15,11 +15,14 @@ object LogReader {
 
   val logger = LoggerFactory.getLogger("LogReader")
   var logFileSize: Long = 0
+  var filePath = ""
 
   def readLogData(): Unit = {
     try {
       val config = ConfigFactory.load("application.conf")
-      val filePath = config.getString("app.log-file.location")
+      filePath = config.getString("app.log-file.location")
+
+      logger.info(s"log file path: $filePath")
 
       FileUtil.createFile(filePath)
       logFileSize = FileUtil.fileSize(filePath)
@@ -57,7 +60,7 @@ object LogReader {
     } catch {
       case exception: Exception => {
         status = StatusEnum.Failed
-        logger.error("Error while reading log data: " + exception.getMessage)
+        logger.error(s"Error while reading log data from path $filePath: " + exception.getMessage)
         throw exception
       }
     }
