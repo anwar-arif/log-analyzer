@@ -21,3 +21,6 @@ For example, if you used the default project name, log-analyzer, and extracted t
 enter: cd log-analyzer
 
 Then enter: sbt run
+
+# Test API's
+Collection of postman requests can be found here: src/main/resources/log-analyzer.postman_collection.json
