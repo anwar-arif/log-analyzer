@@ -23,7 +23,11 @@
 					]
 				}
 			},
-			"response": []
+			"response": [
+				{
+					"size": 1249
+				}
+			]
 		},
 		{
 			"name": "get_status",
@@ -43,7 +47,11 @@
 					]
 				}
 			},
-			"response": []
+			"response": [
+				{
+					"status": "Okay"
+				}
+			]
 		},
 		{
 			"name": "data",
@@ -72,7 +80,25 @@
 					]
 				}
 			},
-			"response": []
+			"response": [
+				{
+					"data": [
+						{
+							"dateTime":"Mar 11 02:18:50",
+							"highlightText": [
+								{
+									"fromPosition": 9,
+									"toPosition": 13
+								}
+							],
+							"message":"anwar-pc gnome-shell[1977]: anwar manager warning: Overwriting existing binding of keysym 38 with keysym 38 (keycode 11)."
+						}
+					],
+					"dateTimeFrom":"Mar 11 02:18:50",
+					"dateTimeUntil":"Mar 11 02:18:50",
+					"phrase":"gnome"
+				}
+			]
 		},
 		{
 			"name": "histogram",
@@ -101,7 +127,27 @@
 					]
 				}
 			},
-			"response": []
+			"response": [
+				{
+					"dateTimeFrom": "Mar 11 02:17:35",
+					"dateTimeUntil": "Mar 11 02:18:50",
+					"histogram": [
+						{
+							"counts": 1,
+							"dateTime": "Mar 11 02:17:35"
+						},
+						{
+							"counts": 1,
+							"dateTime": "Mar 11 02:17:40"
+						},
+						{
+							"counts": 2,
+							"dateTime": "Mar 11 02:18:50"
+						}
+					],
+					"phrase": "anwar"
+				}
+			]
 		}
 	]
 }
