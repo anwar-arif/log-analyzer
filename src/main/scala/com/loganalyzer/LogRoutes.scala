@@ -1,19 +1,14 @@
 package com.loganalyzer
 
-import akka.actor.FSM.Failure
-import akka.actor.typed.scaladsl.AskPattern.{Askable, schedulerFromActorSystem}
 import akka.actor.typed.{ActorRef, ActorSystem}
-import akka.http.scaladsl.model.HttpResponse
-import akka.http.scaladsl.model.StatusCodes.InternalServerError
 import akka.http.scaladsl.server.Directives._
-import akka.http.scaladsl.server.{ExceptionHandler, Route}
+import akka.http.scaladsl.server.Route
 import akka.util.Timeout
 import com.loganalyzer.Models.DataModel._
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
 
 class LogRoutes(logRegistry: ActorRef[Command])(implicit val system: ActorSystem[_]) {
   import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -24,23 +19,27 @@ class LogRoutes(logRegistry: ActorRef[Command])(implicit val system: ActorSystem
   private implicit val timeout = Timeout.create(system.settings.config.getDuration("app.routes.ask-timeout"))
 
   def getStatus(): Future[GetStatusResponse] = {
-//    logRegistry.ask(GetStatus)
-    Future{ LogRegistry.getStatus() }
+    Future{
+      LogRegistry.getStatus()
+    }
   }
 
   def getFileSize(): Future[GetFileSizeResponse] = {
-//    logRegistry.ask(GetFileSize)
-    Future{ LogRegistry.getLogFileSize() }
+    Future {
+      LogRegistry.getLogFileSize()
+    }
   }
 
   def getData(logRequest: LogRequest): Future[GetLogDataResponse] = {
-//    logRegistry.ask(GetLogData(logRequest, _))
-    Future{ LogRegistry.getLogDataResponse(logRequest) }
+    Future{
+      LogRegistry.getLogDataResponse(logRequest)
+    }
   }
 
-  def getHistogram(logRequest: LogRequest): Future[GetLogDataResponse] = {
-//    logRegistry.ask(GetHistogram(logRequest, _))
-    Future{ LogRegistry.getLogDataResponse(logRequest) }
+  def getHistogram(logRequest: LogRequest): Future[GetHistogramResponse] = {
+    Future{
+      LogRegistry.getHistogram(logRequest)
+    }
   }
 
   val logRoutes: Route =

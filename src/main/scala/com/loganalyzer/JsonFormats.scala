@@ -1,18 +1,11 @@
 package com.loganalyzer
 
-import com.loganalyzer.Models.DataModel._
-import com.loganalyzer.UserRegistry.ActionPerformed
+import com.loganalyzer.Models.DataModel.{GetHistogramResponse, _}
 
 //#json-formats
 
 object JsonFormats {
   import spray.json.DefaultJsonProtocol._
-
-  implicit val userJsonFormat = jsonFormat3(User)
-
-  implicit val usersJsonFormat = jsonFormat1(Users)
-
-  implicit val actionPerformedJsonFormat = jsonFormat1(ActionPerformed)
 
   implicit val statusJsonFormat = jsonFormat1(GetStatusResponse)
 
@@ -22,6 +15,14 @@ object JsonFormats {
 
   implicit val getFileSizeResponseJsonFormat = jsonFormat1(GetFileSizeResponse)
 
-  implicit val getLogDataResponseJsonFormat = jsonFormat1(GetLogDataResponse)
+  implicit val highlightText = jsonFormat2(HighlightText)
+
+  implicit val highlightTextResponse = jsonFormat3(HighlightTextResponse)
+
+  implicit val getLogDataResponseJsonFormat = jsonFormat4(GetLogDataResponse)
+
+  implicit val histogramJsonFormat = jsonFormat2(Histogram)
+
+  implicit val getHistogramResponseJsonFormat = jsonFormat4(GetHistogramResponse)
 }
 //#json-formats

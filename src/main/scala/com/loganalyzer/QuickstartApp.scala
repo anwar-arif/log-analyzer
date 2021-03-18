@@ -4,7 +4,7 @@ import akka.actor.typed._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.Directives.{complete, concat, get, pathEnd, pathPrefix}
+import akka.http.scaladsl.server.Directives.concat
 import com.typesafe.config.ConfigFactory
 import org.slf4j.LoggerFactory
 
@@ -42,16 +42,12 @@ object QuickstartApp {
     //#server-bootstrapping
     import ExceptionHandlers.CustomExceptionHandler._
     val rootBehavior = Behaviors.setup[Nothing] { context =>
-      val userRegistryActor = context.spawn(UserRegistry(), "UserRegistryActor")
-      context.watch(userRegistryActor)
-
       val logRegistryActor = context.spawn(LogRegistry(), "LogRegistryActor")
       context.watch(logRegistryActor)
 
-      val userRoutes = new UserRoutes(userRegistryActor)(context.system)
       val logRoutes = new LogRoutes(logRegistryActor)(context.system)
 
-      val allRoutes = Route.seal(concat(logRoutes.logRoutes, userRoutes.userRoutes))
+      val allRoutes = Route.seal(logRoutes.logRoutes)
       startHttpServer(allRoutes)(context.system)
 
       Behaviors.empty

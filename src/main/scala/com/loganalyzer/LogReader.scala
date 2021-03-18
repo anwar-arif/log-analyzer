@@ -41,6 +41,9 @@ object LogReader {
         })
 
         time = time.strip()
+        if (!DateUtil.isValidDateFormat(time)) {
+          throw new Exception("Couldn't parse: " + time)
+        }
         message = message.strip()
         val epoch: Long = DateUtil.getEpoch(time)
         logger.info("Date: " + DateUtil.getDate(epoch) + " epoch: " + epoch)
@@ -55,12 +58,8 @@ object LogReader {
       case exception: Exception => {
         status = StatusEnum.Failed
         logger.error("Error while reading log data: " + exception.getMessage)
+        throw exception
       }
     }
-  }
-
-  def getLogFileSize() = {
-    logger.info("File size: " + logFileSize)
-    logFileSize
   }
 }

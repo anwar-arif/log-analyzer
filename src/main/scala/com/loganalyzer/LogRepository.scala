@@ -117,7 +117,10 @@ object LogRepository {
     }
   }
 
-  def getLogs(logRequest: LogRequest): GetLogDataResponse = {
+  def getLogs(logRequest: LogRequest): Seq[LogData] = {
+    DateUtil.handleDateFormat(logRequest.dateTimeFrom)
+    DateUtil.handleDateFormat(logRequest.dateTimeUntil)
+
     val dateTimeFrom: Long = DateUtil.getEpoch(logRequest.dateTimeFrom)
     val dateTimeUntil: Long = DateUtil.getEpoch(logRequest.dateTimeUntil)
     val phrase: String = logRequest.phrase
@@ -127,7 +130,7 @@ object LogRepository {
     try {
       getConnection() match {
         case Some(conn) => {
-          var resultData = Seq[LogData]()
+          var logData = Seq[LogData]()
 
           val stmt = conn.createStatement()
           val resultSet = stmt.executeQuery(sql)
@@ -136,19 +139,57 @@ object LogRepository {
             val date = resultSet.getLong(dateCol)
             val message = resultSet.getString(messageCol)
 
-            resultData = resultData :+ LogData(date, message)
+            logData = logData :+ LogData(date, message)
 
             logger.info(s"Database query date: $date, message: $message")
           }
 
-          GetLogDataResponse(resultData)
+          logData
         }
       }
     } catch {
       case exception: Exception => {
         logger.error("Error while fetching database: " + exception.getMessage)
-        GetLogDataResponse(Seq.empty)
+        Seq[LogData]()
       }
     }
+  }
+
+  def getLogDataResponse(logRequest: LogRequest): GetLogDataResponse = {
+    val logdata = getLogs(logRequest)
+    var highlightTextResponseSeq = Seq[HighlightTextResponse]()
+    logdata.foreach(data => {
+      val date = DateUtil.getDate(data.date)
+      highlightTextResponseSeq = highlightTextResponseSeq :+ getHighlightTextResponse(date, data.message, logRequest.phrase)
+    })
+    GetLogDataResponse(highlightTextResponseSeq, logRequest.dateTimeFrom, logRequest.dateTimeUntil, logRequest.phrase)
+  }
+
+  def getHighlightTextResponse(dateTime: String, message: String, phrase: String): HighlightTextResponse = {
+    var highlightTextSeq = Seq[HighlightText]()
+    var msg = message
+    var prefixLength = 0
+
+    while (msg.contains(phrase)) {
+      val index = msg.indexOfSlice(phrase)
+      highlightTextSeq = highlightTextSeq :+ HighlightText(index + prefixLength, index + prefixLength + phrase.length - 1)
+      prefixLength += index + phrase.length
+      msg = msg.slice(index + phrase.length, msg.length)
+    }
+
+    HighlightTextResponse(dateTime, message, highlightTextSeq)
+  }
+
+  def getHistogram(logRequest: LogRequest): GetHistogramResponse = {
+    val logData = getLogs(logRequest)
+
+    var histogramSeq = Seq[Histogram]()
+    logData.foreach(data => {
+      val dateTime = DateUtil.getDate(data.date)
+      val counts = data.message.sliding(logRequest.phrase.length).count(window => window == logRequest.phrase)
+      histogramSeq = histogramSeq :+ Histogram(dateTime, counts)
+    })
+
+    GetHistogramResponse(histogramSeq, logRequest.dateTimeFrom, logRequest.dateTimeUntil, logRequest.phrase)
   }
 }

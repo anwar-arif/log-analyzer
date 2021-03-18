@@ -7,6 +7,9 @@ object DataModel {
   // model class
   case class LogData(date: Long, message: String)
   final case class LogRequest(dateTimeFrom: String, dateTimeUntil: String, phrase: String)
+  final case class HighlightText(fromPosition: Int, toPosition: Int)
+  final case class HighlightTextResponse(dateTime: String, message: String, highlightText: Seq[HighlightText])
+  final case class Histogram(dateTime: String, counts: Int)
 
   // request class
   sealed trait Command
@@ -19,5 +22,8 @@ object DataModel {
   // response class
   final case class GetStatusResponse(status: String)
   final case class GetFileSizeResponse(size: Long)
-  final case class GetLogDataResponse(data: Seq[LogData])
+  final case class GetLogDataResponse(data: Seq[HighlightTextResponse], dateTimeFrom: String,
+                                      dateTimeUntil: String, phrase: String)
+  final case class GetHistogramResponse(histogram: Seq[Histogram], dateTimeFrom: String,
+                                        dateTimeUntil: String, phrase: String)
 }

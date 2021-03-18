@@ -1,8 +1,10 @@
 package com.loganalyzer
 
+import akka.actor.Status.Failure
 import akka.actor.typed.{Behavior, SupervisorStrategy}
 import akka.actor.typed.scaladsl.Behaviors
 import com.loganalyzer.Models.DataModel._
+import com.loganalyzer.utils.DateUtil
 import org.slf4j.LoggerFactory
 
 object LogRegistry {
@@ -34,13 +36,14 @@ object LogRegistry {
   }
 
   def getLogFileSize(): GetFileSizeResponse = {
-    GetFileSizeResponse(LogReader.getLogFileSize())
-//    throw new Exception("log file size exception")
+    GetFileSizeResponse(LogReader.logFileSize)
   }
 
   def getLogDataResponse(logRequest: LogRequest): GetLogDataResponse = {
-    logger.info("Request: " + logRequest.dateTimeFrom)
-    LogRepository.getLogs(logRequest)
-//    throw new Exception("get log data exception")
+    LogRepository.getLogDataResponse(logRequest)
+  }
+
+  def getHistogram(logRequest: LogRequest): GetHistogramResponse = {
+    LogRepository.getHistogram(logRequest)
   }
 }
